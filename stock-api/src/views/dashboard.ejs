@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Librería StockAlert</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f3f4f6; --text-main: #1f2937; --text-muted: #6b7280;
+            --danger: #dc2626; --danger-bg: #fee2e2; --success: #059669; --success-bg: #d1fae5;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; }
+        .header h1 { margin: 0; font-size: 26px; color: #111827; }
+        .header p { color: var(--text-muted); margin: 5px 0 0 0; font-size: 15px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead { background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; }
+        th { padding: 16px 24px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        td { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; font-size: 15px; vertical-align: middle; }
+        tbody tr:hover { background-color: #f9fafb; transition: background-color 0.2s; }
+        .badge { padding: 6px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; display: inline-block; }
+        .badge-estable { background-color: var(--success-bg); color: var(--success); }
+        .badge-alerta { background-color: var(--danger-bg); color: var(--danger); }
+        .fila-alerta { background-color: #fffafaf0; }
+
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 5px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-editar { background-color: #2563eb; color: white; }
+        .btn-borrar { background-color: var(--danger); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <% let librosEnAlerta = libros.filter(l => l.cantidad < l.umbralMinimo).length; %>
+
+        <div class="header">
+            <div>
+                <h1>📚 Panel de Inventario</h1>
+                <p>Monitor de existencias de la librería en tiempo real</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 4px;">Atención requerida</span>
+                <strong style="font-size: 24px; color: <%= librosEnAlerta > 0 ? 'var(--danger)' : 'var(--success)' %>;">
+                    <%= librosEnAlerta %> libro(s)
+                </strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Stock</th>
+                        <th>Umbral</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (libros.length === 0) { %>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-muted);">
+                                No hay libros registrados en el inventario.
+                            </td>
+                        </tr>
+                    <% } else { %>
+                        <% libros.forEach(function(libro) { %>
+                            <% let requiereReposicion = libro.cantidad < libro.umbralMinimo; %>
+                            <tr class="<%= requiereReposicion ? 'fila-alerta' : '' %>">
+                                <td style="font-weight: 600; color: #111827;"><%= libro.titulo %></td>
+                                <td style="color: var(--text-muted);"><%= libro.autor %></td>
+                                <td style="font-weight: bold; color: <%= requiereReposicion ? 'var(--danger)' : '#111827' %>;"><%= libro.cantidad %></td>
+                                <td style="color: var(--text-muted);"><%= libro.umbralMinimo %></td>
+                                <td>
+                                    <span class="badge <%= requiereReposicion ? 'badge-alerta' : 'badge-estable' %>">
+                                        <%= requiereReposicion ? '⚠️ Reposición' : '✅ Estable' %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-editar" onclick="editarStock('<%= libro._id %>', '<%= libro.titulo %>', <%= libro.cantidad %>)">Editar</button>
+                                    <button class="btn btn-borrar" onclick="borrarLibro('<%= libro._id %>', '<%= libro.titulo %>')">Borrar</button>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function obtenerToken() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sesión no encontrada. Por favor, inicia sesión como administrador primero.');
+                window.location.href = '/login';
+                return null;
+            }
+            return token;
+        }
+
+        async function editarStock(id, titulo, stockActual) {
+            const token = obtenerToken();
+            if (!token) return;
+
+            const nuevaCantidad = prompt(`Ingresa el NUEVO STOCK para el libro "${titulo}":`, stockActual);
+            
+            if (nuevaCantidad === null || nuevaCantidad.trim() === '') return;
+
+            const cantidadNumerica = Number(nuevaCantidad);
+            if (isNaN(cantidadNumerica) || cantidadNumerica < 0) {
+                return alert('Por favor ingresa un número válido mayor o igual a cero.');
+            }
+
+            try {
+                const response = await fetch(`/api/libros/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ cantidad: cantidadNumerica })
+                });
+
+                if (response.ok) {
+                    window.location.reload(); 
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+
+        async function borrarLibro(id, titulo) {
+            const token = obtenerToken();
+            if (!token) return;
+
+            const confirmar = confirm(`¿Estás completamente seguro de que deseas ELIMINAR el libro "${titulo}" del inventario? Esta acción no se puede deshacer.`);
+            
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`/api/libros/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    window.location.reload(); 
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        }
+    </script>
+</body>
+</html>
