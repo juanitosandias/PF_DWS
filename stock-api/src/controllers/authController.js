@@ -31,19 +31,19 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // 1. Buscamos al usuario en la base de datos
+    // Buscamos al usuario en la base de datos
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ error: 'Credenciales inválidas.' });
     }
 
-    // 2. Usamos el método personalizado que creaste en User.js para comparar
+    // Usamos el método personalizado que creaste en User.js para comparar
     const passwordValido = await user.compararPassword(password);
     if (!passwordValido) {
       return res.status(400).json({ error: 'Credenciales inválidas.' });
     }
 
-    // 3. Si todo es correcto, generamos el Token JWT
+    // Si todo es correcto, generamos el Token JWT
     const token = jwt.sign(
       { id: user._id, username: user.username }, 
       process.env.JWT_SECRET || 'clave_secreta_de_respaldo', 

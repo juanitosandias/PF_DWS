@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const verificarToken = (req, res, next) => {
-  // 1. Buscamos el token en los encabezados de la petición
+  // Buscamos el token en los encabezados de la petición
   const authHeader = req.header('Authorization');
 
   // Si no hay encabezado de autorización, rechazamos la petición
@@ -9,7 +9,7 @@ const verificarToken = (req, res, next) => {
     return res.status(401).json({ error: 'Acceso denegado. No se proporcionó un token de seguridad.' });
   }
 
-  // 2. Extraemos el token. 
+  // Extraemos el token. 
   // enviarlo como "Bearer <token>", que no se me olvide.
   const token = authHeader.split(' ')[1];
 
@@ -18,14 +18,14 @@ const verificarToken = (req, res, next) => {
   }
 
   try {
-    // 3. Verificamos que el token sea auténtico y no haya expirado
+    // Verificamos que el token sea auténtico y no haya expirado
     const secret = process.env.JWT_SECRET || 'clave_secreta_de_respaldo';
     const usuarioDecodificado = jwt.verify(token, secret);
 
-    // 4. Si es válido, guardamos los datos del usuario en la petición (req.user)
+    // Si es válido, guardamos los datos del usuario en la petición (req.user)
     req.user = usuarioDecodificado;
 
-    // 5. next() le da permiso a la petición para continuar hacia la ruta final
+    // next() le da permiso a la petición para continuar hacia la ruta final
     next();
   } catch (err) {
     // Si jwt.verify falla, cae aquí

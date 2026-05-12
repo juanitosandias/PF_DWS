@@ -1,4 +1,4 @@
-// 1. Importación de módulos
+// Importación de módulos
 require('dotenv').config();
 const express  = require('express');
 const mongoose = require('mongoose');
@@ -7,22 +7,22 @@ const path     = require('path');
 
 const app = express();
 
-// 2. Middleware y motor de plantillas
+// Middleware y motor de plantillas
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
 
-// 3. Conexión a MongoDB
+// Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Conectado a MongoDB'))
   .catch(err => console.error('Error de conexión:', err));
 
-// 4. Rutas
+// Rutas
 app.use('/api/auth',   require('./src/routes/authRoutes'));
 app.use('/api/libros', require('./src/routes/libroRoutes'));
 
-// 5. Dashboard (Plantilla EJS)
+// Dashboard (Plantilla EJS)
 const Libro = require('./src/models/Libro');
 
 app.get('/dashboard', async (req, res) => {
@@ -38,7 +38,7 @@ app.get('/login', (req, res) => {
     res.render('login');
 });
 
-// 6. Cron Job — Revisión de stock de libros cada minuto
+// Cron Job — Revisión de stock de libros cada minuto
 cron.schedule('* * * * *', async () => {
   console.log('\nRevisando inventario de la librería...');
   try {
@@ -65,7 +65,7 @@ cron.schedule('* * * * *', async () => {
   }
 });
 
-// 7. Arranque del servidor
+// Arranque del servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
