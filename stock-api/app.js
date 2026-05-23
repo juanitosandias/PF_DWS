@@ -39,7 +39,7 @@ app.get('/login', (req, res) => {
 });
 
 // Cron Job — Revisión de stock de libros cada minuto
-cron.schedule('* * * * *', async () => {
+cron.schedule('*/30 * * * * *', async () => {
   console.log('\nRevisando inventario de la librería...');
   try {
     // Consulta: libros con stock bajo que AÚN no tienen alerta activa

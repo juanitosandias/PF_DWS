@@ -4,53 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Librería StockAlert</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-color: #f3f4f6; --text-main: #1f2937; --text-muted: #6b7280;
             --danger: #dc2626; --danger-bg: #fee2e2; --success: #059669; --success-bg: #d1fae5;
+            --primary: #2563eb; --nav-bg: #111827;
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 40px 20px; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px; }
-        .header h1 { margin: 0; font-size: 26px; color: #111827; }
-        .header p { color: var(--text-muted); margin: 5px 0 0 0; font-size: 15px; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseAlert { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: var(--nav-bg); border-bottom: 3px solid var(--primary); }
+        nav .logo { font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: 1px; }
+        nav .logo span { color: var(--primary); }
+        nav button { background: transparent; border: 1px solid var(--text-muted); color: white; padding: 7px 18px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        nav button:hover { background: var(--danger); border-color: var(--danger); }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 40px 20px; animation: fadeIn 0.6s ease-out; }
+        
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        h1 { font-size: 1.8rem; font-weight: 700; color: #111827; }
+        p.subtitle { color: var(--text-muted); margin-top: 4px; font-size: 0.95rem; }
+
+        .stats { display: flex; gap: 20px; margin-bottom: 32px; }
+        .stat-card { flex: 1; background: white; border-radius: 12px; padding: 20px 24px; border-left: 4px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); opacity: 0; animation: slideUp 0.5s ease-out forwards; transition: transform 0.2s ease; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; border-left-color: var(--danger); }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; border-left-color: var(--success); }
+        .stat-card .num { font-size: 2rem; font-weight: 900; color: #111827; }
+        .stat-card:nth-child(2) .num { color: var(--danger); }
+        .stat-card:nth-child(3) .num { color: var(--success); }
+        .stat-card .label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .card-table { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; animation: slideUp 0.6s ease-out forwards; animation-delay: 0.4s; opacity: 0; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         thead { background-color: #f9fafb; border-bottom: 2px solid #e5e7eb; }
-        th { padding: 16px 24px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
-        td { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; font-size: 15px; vertical-align: middle; }
-        tbody tr:hover { background-color: #f9fafb; transition: background-color 0.2s; }
-        .badge { padding: 6px 12px; border-radius: 9999px; font-size: 13px; font-weight: 600; display: inline-block; }
-        .badge-estable { background-color: var(--success-bg); color: var(--success); }
-        .badge-alerta { background-color: var(--danger-bg); color: var(--danger); }
+        th { padding: 16px 24px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        td { padding: 16px 24px; border-bottom: 1px solid #e5e7eb; font-size: 0.95rem; vertical-align: middle; }
+        tbody tr { transition: background-color 0.2s ease; }
+        tbody tr:hover { background-color: #f9fafb; }
         .fila-alerta { background-color: #fffafaf0; }
 
-        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 5px; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.8; }
-        .btn-editar { background-color: #2563eb; color: white; }
+        .badge { padding: 6px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; display: inline-block; }
+        .badge-estable { background-color: var(--success-bg); color: var(--success); }
+        .badge-alerta { background-color: var(--danger-bg); color: var(--danger); animation: pulseAlert 2s infinite; }
+
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-right: 5px; transition: all 0.2s; }
+        .btn:hover { opacity: 0.8; transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+        .btn-editar { background-color: var(--primary); color: white; }
         .btn-borrar { background-color: var(--danger); color: white; }
+
+        /* --- ESTILOS PARA LOS MODALES --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal {
+            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out;
+        }
+        .modal h2 { margin-bottom: 20px; font-size: 1.4rem; color: #111827; }
+        .modal .form-group { margin-bottom: 15px; }
+        .modal label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: var(--text-main); }
+        .modal input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Inter', sans-serif; }
+        .modal input:focus { outline: none; border-color: var(--primary); }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+        .btn-cancelar { background-color: #e5e7eb; color: #1f2937; }
+        .btn-cancelar:hover { background-color: #d1d5db; }
+        .btn-guardar { padding: 8px 16px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <% let librosEnAlerta = libros.filter(l => l.cantidad < l.umbralMinimo).length; %>
 
-        <div class="header">
+    <nav>
+        <div class="logo">Stock<span>Alert</span></div>
+        <button onclick="cerrarSesion()">Cerrar sesión</button>
+    </nav>
+
+    <main>
+        <% 
+            const criticos = libros.filter(l => l.cantidad < l.umbralMinimo).length; 
+            const normales = libros.length - criticos;
+        %>
+
+        <div class="header-row">
             <div>
-                <h1>📚 Panel de Inventario</h1>
-                <p>Monitor de existencias de la librería en tiempo real</p>
+                <h1>Panel de Inventario</h1>
+                <p class="subtitle">Monitor de existencias de la librería en tiempo real</p>
             </div>
-            <div style="text-align: right;">
-                <span style="font-size: 14px; color: var(--text-muted); display: block; margin-bottom: 4px;">Atención requerida</span>
-                <strong style="font-size: 24px; color: <%= librosEnAlerta > 0 ? 'var(--danger)' : 'var(--success)' %>;">
-                    <%= librosEnAlerta %> libro(s)
-                </strong>
+            <button class="btn btn-editar" style="padding: 10px 20px; font-size: 0.9rem;" onclick="abrirModalAñadir()">
+                + Añadir Libro
+            </button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="num"><%= libros.length %></div>
+                <div class="label">Total de Títulos</div>
+            </div>
+            <div class="stat-card">
+                <div class="num"><%= criticos %></div>
+                <div class="label">Requieren Reposición</div>
+            </div>
+            <div class="stat-card">
+                <div class="num"><%= normales %></div>
+                <div class="label">Stock Estable</div>
             </div>
         </div>
 
-        <div class="card">
+        <div class="card-table">
             <table>
                 <thead>
                     <tr>
@@ -66,7 +137,7 @@
                     <% if (libros.length === 0) { %>
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-muted);">
-                                No hay libros registrados en el inventario.
+                                No hay libros registrados en el inventario. Haz clic en "Añadir Libro" para empezar.
                             </td>
                         </tr>
                     <% } else { %>
@@ -83,7 +154,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-editar" onclick="editarStock('<%= libro._id %>', '<%= libro.titulo %>', <%= libro.cantidad %>)">Editar</button>
+                                    <button class="btn btn-editar" onclick="abrirModalEditar('<%= libro._id %>', '<%= libro.titulo %>', <%= libro.cantidad %>)">Editar</button>
                                     <button class="btn btn-borrar" onclick="borrarLibro('<%= libro._id %>', '<%= libro.titulo %>')">Borrar</button>
                                 </td>
                             </tr>
@@ -92,80 +163,165 @@
                 </tbody>
             </table>
         </div>
+    </main>
+
+    <div id="modalAñadir" class="modal-overlay">
+        <div class="modal">
+            <h2>Registrar Nuevo Libro</h2>
+            <form id="formAñadir">
+                <div class="form-group">
+                    <label>Título del Libro</label>
+                    <input type="text" id="nuevoTitulo" placeholder="Ej. Don Quijote" required>
+                </div>
+                <div class="form-group">
+                    <label>Autor</label>
+                    <input type="text" id="nuevoAutor" placeholder="Ej. Miguel de Cervantes" required>
+                </div>
+                <div class="form-group">
+                    <label>ISBN (Opcional)</label>
+                    <input type="text" id="nuevoIsbn" placeholder="Ej. 978-8437604947">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Stock Inicial</label>
+                        <input type="number" id="nuevoStock" min="0" value="0" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Umbral Mínimo</label>
+                        <input type="number" id="nuevoUmbral" min="0" value="5" required>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalAñadir()">Cancelar</button>
+                    <button type="submit" class="btn btn-editar btn-guardar">Guardar Libro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalEditar" class="modal-overlay">
+        <div class="modal">
+            <h2>Actualizar Stock</h2>
+            <p id="tituloLibroEditar" style="color: var(--text-muted); margin-bottom: 20px; font-weight: 600;"></p>
+            
+            <form id="formEditar">
+                <input type="hidden" id="idLibroEditar">
+                
+                <div class="form-group">
+                    <label>Cantidad en Existencia</label>
+                    <input type="number" id="stockLibroEditar" min="0" required>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
+                    <button type="submit" class="btn btn-editar btn-guardar">Actualizar Inventario</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        function obtenerToken() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Sesión no encontrada. Por favor, inicia sesión como administrador primero.');
-                window.location.href = '/login';
-                return null;
-            }
-            return token;
+        if (!localStorage.getItem('token')) { window.location.href = '/login'; }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
         }
 
-        async function editarStock(id, titulo, stockActual) {
+        function obtenerToken() { return localStorage.getItem('token'); }
+
+        // --- LÓGICA DEL MODAL AÑADIR ---
+        function abrirModalAñadir() {
+            document.getElementById('modalAñadir').style.display = 'flex';
+            document.getElementById('nuevoTitulo').focus();
+        }
+
+        function cerrarModalAñadir() {
+            document.getElementById('modalAñadir').style.display = 'none';
+            document.getElementById('formAñadir').reset();
+        }
+
+        document.getElementById('formAñadir').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const token = obtenerToken();
             if (!token) return;
 
-            const nuevaCantidad = prompt(`Ingresa el NUEVO STOCK para el libro "${titulo}":`, stockActual);
-            
-            if (nuevaCantidad === null || nuevaCantidad.trim() === '') return;
+            const titulo = document.getElementById('nuevoTitulo').value;
+            const autor = document.getElementById('nuevoAutor').value;
+            const isbn = document.getElementById('nuevoIsbn').value;
+            const cantidad = Number(document.getElementById('nuevoStock').value);
+            const umbralMinimo = Number(document.getElementById('nuevoUmbral').value);
 
-            const cantidadNumerica = Number(nuevaCantidad);
-            if (isNaN(cantidadNumerica) || cantidadNumerica < 0) {
-                return alert('Por favor ingresa un número válido mayor o igual a cero.');
-            }
+            try {
+                const response = await fetch('/api/libros', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ titulo, autor, isbn, cantidad, umbralMinimo })
+                });
+
+                if (response.ok) { window.location.reload(); } 
+                else { const data = await response.json(); alert('Error: ' + data.error); }
+            } catch (error) { alert('No se pudo conectar con el servidor.'); }
+        });
+
+        // --- NUEVA LÓGICA DEL MODAL EDITAR ---
+        function abrirModalEditar(id, titulo, stockActual) {
+            // Llenamos el modal con los datos del libro seleccionado
+            document.getElementById('idLibroEditar').value = id;
+            document.getElementById('tituloLibroEditar').textContent = `Libro: ${titulo}`;
+            document.getElementById('stockLibroEditar').value = stockActual;
+            
+            // Mostramos el modal
+            document.getElementById('modalEditar').style.display = 'flex';
+            
+            // Ponemos el cursor automáticamente en el campo de número y lo seleccionamos
+            const inputStock = document.getElementById('stockLibroEditar');
+            inputStock.focus();
+            inputStock.select();
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modalEditar').style.display = 'none';
+            document.getElementById('formEditar').reset();
+        }
+
+        document.getElementById('formEditar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = obtenerToken();
+            if (!token) return;
+
+            // Extraemos los datos del modal
+            const id = document.getElementById('idLibroEditar').value;
+            const cantidad = Number(document.getElementById('stockLibroEditar').value);
 
             try {
                 const response = await fetch(`/api/libros/${id}`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ cantidad: cantidadNumerica })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ cantidad })
                 });
 
-                if (response.ok) {
-                    window.location.reload(); 
-                } else {
-                    const data = await response.json();
-                    alert('Error: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
-            }
-        }
+                if (response.ok) { window.location.reload(); } 
+                else { const data = await response.json(); alert('Error: ' + data.error); }
+            } catch (error) { alert('No se pudo conectar con el servidor.'); }
+        });
 
+        // --- LÓGICA DE BORRADO ---
         async function borrarLibro(id, titulo) {
             const token = obtenerToken();
             if (!token) return;
-
-            const confirmar = confirm(`¿Estás completamente seguro de que deseas ELIMINAR el libro "${titulo}" del inventario? Esta acción no se puede deshacer.`);
-            
+            const confirmar = confirm(`¿Deseas ELIMINAR permanentemente el libro "${titulo}"?`);
             if (!confirmar) return;
-
+            
             try {
-                const response = await fetch(`/api/libros/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const response = await fetch(`/api/libros/${id}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
                 });
-
-                if (response.ok) {
-                    window.location.reload(); 
-                } else {
-                    const data = await response.json();
-                    alert('Error: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
-            }
+                
+                if (response.ok) { window.location.reload(); } 
+                else { const data = await response.json(); alert('Error: ' + data.error); }
+            } catch (error) { alert('No se pudo conectar con el servidor.'); }
         }
     </script>
 </body>
